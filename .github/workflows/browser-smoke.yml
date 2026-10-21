@@ -1,0 +1,37 @@
+name: Browser smoke (portable)
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Build
+        run: npm run build
+      - name: Start server
+        shell: pwsh
+        run: |
+          Start-Process -FilePath "cmd.exe" -ArgumentList "/c npm run start > server.log 2>&1" -WorkingDirectory $pwd -WindowStyle Hidden
+      - name: Wait for server
+        shell: pwsh
+        run: |
+          $ready = $false
+          for ($i = 0; $i -lt 45; $i++) {
+            try { Invoke-WebRequest -Uri "http://localhost:3000/today?demo=1" -UseBasicParsing | Out-Null; $ready = $true; break } catch { Start-Sleep -Seconds 2 }
+          }
+          if (-not $ready) { throw "Next.js server did not start" }
+      - name: Run existing browser tests
+        run: npm test
