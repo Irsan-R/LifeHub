@@ -1,0 +1,43 @@
+name: LifeHub CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and Cloudflare bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      # npm install is intentional until the dependency lockfile is refreshed
+      # and committed; change this to npm ci in the follow-up lockfile PR.
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Build Cloudflare Worker
+        run: npm run cf:build
+      - name: Validate generated Worker entrypoint
+        run: test -f .open-next/worker.js
+      - name: Upload build summary
+        if: always()
+        run: |
+          echo '### LifeHub CI' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Cloudflare Worker bundle is validated by the build job.' >> "$GITHUB_STEP_SUMMARY"
+
+  # Deployment is handled by Cloudflare Workers Builds Git integration.
+  # Avoid a second GitHub Actions deploy job: two deployers can race.
