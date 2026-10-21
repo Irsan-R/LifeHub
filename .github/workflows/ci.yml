@@ -29,10 +29,8 @@ jobs:
       # and committed; change this to npm ci in the follow-up lockfile PR.
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-      - name: Typecheck and Next build
-        run: npm run build
       - name: Build Cloudflare Worker
-        run: npx opennextjs-cloudflare build
+        run: npm run cf:build
       - name: Validate generated Worker entrypoint
         run: test -f .open-next/worker.js
       - name: Upload build summary
