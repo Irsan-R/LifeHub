@@ -14,7 +14,7 @@ Cloudflare Workers & Pages → Worker `lifehub` → Builds → Git integration: 
 | --- | --- |
 | Project / Worker name | `lifehub` |
 | Production branch | `main` |
-| Build command | `npm install --no-audit --no-fund && npx opennextjs-cloudflare build` |
+| Build command | `npm install --no-audit --no-fund && npm run cf:build` |
 | Deploy command | `npx opennextjs-cloudflare deploy` |
 | Preview command | `npx opennextjs-cloudflare upload` (only if branch previews are desired) |
 | Root directory | repository root |
@@ -45,7 +45,7 @@ Cloudflare Workers & Pages → Worker `lifehub` → Builds → Git integration: 
 
 ## Dependency reproducibility
 
-This PR adds OpenNext/Wrangler dependencies. Refresh and commit `package-lock.json` with `npm install` in a network-enabled development environment, then change CI install from `npm install` to `npm ci`. Until then the Cloudflare build command explicitly runs `npm install` to reconcile the lockfile. Treat a committed, synchronized lockfile as a **required follow-up before production**.
+This PR adds OpenNext/Wrangler dependencies in package.json, but package-lock.json is not yet updated. Refresh and commit `package-lock.json` with `npm install` in a network-enabled development environment, then change CI install from `npm install` to `npm ci`. Until then the Cloudflare build command explicitly runs `npm install` to reconcile the lockfile. Treat a committed, synchronized lockfile as a **required follow-up before production**.
 
 ## Local verification
 
